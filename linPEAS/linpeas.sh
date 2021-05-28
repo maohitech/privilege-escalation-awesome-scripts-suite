@@ -3292,6 +3292,24 @@ if [ "`echo $CHECKS | grep IntFiles`" ]; then
     echo ""
   fi
 
+  ##-- IF) Interesting writable files by owned by root
+  if ! [ "$IAMROOT" ]; then
+    printf $Y"[+] "$GREEN"Interesting writable files owned by root and writable by everyone (not in Home) (max 500)\n"$NC
+    printf $B"[i] "$Y"https://book.hacktricks.xyz/linux-unix/privilege-escalation#writable-files\n"$NC
+    #In the next file, you need to specify type "d" and "f" to avoid fake link files apparently writable by all
+    obmowbe=`find / -user root -perm -002 -type f -not -path "/proc*" 2> /dev/null`
+    printf "%s\n" "$obmowbe" | while read entry; do
+      if [ "`echo \"$entry\" | grep \"You_can_write_even_more_files_inside_last_directory\"`" ]; then printf $ITALIC"$entry\n"$NC;
+      elif [ "`echo \"$entry\" | grep -E \"$writeVB\"`" ]; then
+        echo "$entry" | sed -${E} "s,$writeVB,${C}[1;31;103m&${C}[0m,"
+      else
+        echo "$entry" | sed -${E} "s,$writeB,${C}[1;31m&${C}[0m,"
+      fi
+    done
+    echo ""
+  fi
+
+
   ##-- IF) Interesting writable files by group
   if ! [ "$IAMROOT" ]; then
     printf $Y"[+] "$GREEN"Interesting GROUP writable files (not in Home) (max 500)\n"$NC
